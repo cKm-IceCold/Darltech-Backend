@@ -27,6 +27,26 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const authRoutes = require('./src/routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+// Course Routes
+const courseRoutes = require('./src/routes/courseRoutes');
+app.use('/api/courses', courseRoutes);
+
+// Module Routes
+const moduleRoutes = require('./src/routes/moduleRoutes');
+app.use('/api/modules', moduleRoutes);
+
+// Lesson Routes
+const lessonRoutes = require('./src/routes/lessonRoutes');
+app.use('/api/lessons', lessonRoutes);
+
+// Upload Routes
+const uploadRoutes = require('./src/routes/uploadRoutes');
+app.use('/api/upload', uploadRoutes);
+
+// Make uploads folder static so files can be accessed via URL
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);
