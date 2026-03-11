@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
 const { notFound, errorHandler } = require('./src/middleware/errorMiddleware');
@@ -11,9 +12,33 @@ connectDB();
 
 const app = express();
 
-// Middleware
-app.use(express.json());
-app.use(cors());
+// Security Middleware
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+
+app.use(helmet()); // Set security headers
+app.use(express.json({ limit: '10kb' })); // Body parser, limiting data size
+app.use(mongoSanitize()); // Data sanitization against NoSQL query injection
+app.use(xss()); // Data sanitization against XSS
+app.use(hpp()); // Prevent HTTP parameter pollution
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api', limiter);
+
+// CORS
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*', // Restrict to your frontend URL in the future
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+}));
 
 // Default Route
 app.get('/', (req, res) => {
@@ -46,6 +71,10 @@ app.use('/api/upload', uploadRoutes);
 // Enrollment Routes
 const enrollmentRoutes = require('./src/routes/enrollmentRoutes');
 app.use('/api/enrollments', enrollmentRoutes);
+
+// Payment Routes
+const paymentRoutes = require('./src/routes/paymentRoutes');
+app.use('/api/payments', paymentRoutes);
 
 // Make uploads folder static so files can be accessed via URL
 const path = require('path');
