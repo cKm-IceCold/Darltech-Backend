@@ -43,6 +43,10 @@ app.use('/api/lessons', lessonRoutes);
 const uploadRoutes = require('./src/routes/uploadRoutes');
 app.use('/api/upload', uploadRoutes);
 
+// Enrollment Routes
+const enrollmentRoutes = require('./src/routes/enrollmentRoutes');
+app.use('/api/enrollments', enrollmentRoutes);
+
 // Make uploads folder static so files can be accessed via URL
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
